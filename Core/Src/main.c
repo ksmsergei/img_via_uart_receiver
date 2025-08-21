@@ -53,7 +53,7 @@ UART_HandleTypeDef huart1;
 /* USER CODE BEGIN PV */
 
 uint8_t uart_rx_buffer[1024];
-bool should_draw = false;
+volatile bool should_draw = false;
 
 /* USER CODE END PV */
 
@@ -70,6 +70,27 @@ static void MX_USART1_UART_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+void clear_screen() {
+  ST7920_Draw_rectangle_filled(0, 0, 127, 63);
+}
+
+void print_on_x_center(uint8_t y, const char *str) {
+  int len = 0;
+  const char *s = str;
+
+  //Calculate UTF8-aware string length
+  while (*s) {
+    if ((*s & 0xC0) != 0x80) {
+      len++;
+    }
+
+    s++;
+  }
+
+  sprintf(tx_buffer, "%s", str);
+  ST7920_Decode_UTF8(64 - len * 3, y, 1, tx_buffer);
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -80,27 +101,6 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
-	void clear_screen() {
-		ST7920_Draw_rectangle_filled(0, 0, 127, 63);
-	}
-
-	void print_on_x_center(uint8_t y, const char *str) {
-		int len = 0;
-		const char *s = str;
-
-		//Calculate UTF8-aware string length
-		while (*s) {
-	    	if ((*s & 0xC0) != 0x80) {
-	        	len++;
-	    	}
-
-	        s++;
-	    }
-
-		sprintf(tx_buffer, "%s", str);
-		ST7920_Decode_UTF8(64 - len * 3, y, 1, tx_buffer);
-	}
 
   /* USER CODE END 1 */
 
@@ -292,8 +292,8 @@ static void MX_DMA_Init(void)
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-/* USER CODE BEGIN MX_GPIO_Init_1 */
-/* USER CODE END MX_GPIO_Init_1 */
+  /* USER CODE BEGIN MX_GPIO_Init_1 */
+  /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOD_CLK_ENABLE();
@@ -309,8 +309,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-/* USER CODE BEGIN MX_GPIO_Init_2 */
-/* USER CODE END MX_GPIO_Init_2 */
+  /* USER CODE BEGIN MX_GPIO_Init_2 */
+  /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
@@ -336,8 +336,7 @@ void Error_Handler(void)
   }
   /* USER CODE END Error_Handler_Debug */
 }
-
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.
